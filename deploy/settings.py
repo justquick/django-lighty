@@ -44,12 +44,12 @@ MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
-MEDIA_URL = 'http://127.0.0.1:8000/media/'
+MEDIA_URL = '/media/'
 
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
-ADMIN_MEDIA_PREFIX = 'http://127.0.0.1:8000/media/admin/'
+ADMIN_MEDIA_PREFIX = '/admin-media/'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '3e3f)^l&&&izq3an(dc+g4-+ts%&b27%%rop)1nx_)9cl85qr8'
@@ -87,14 +87,17 @@ TEMPLATE_DIRS = (
 
 INSTALLED_APPS = (
     'django.contrib.auth',
+    'django.contrib.admin',
+    'django.contrib.sessions',
     'django.contrib.contenttypes',
     'django.contrib.sites',
     'lighty',
 )
 
-LIGHTY_USER = 'www' # OSX
-LIGHTY_USER = 'www-data' # Ubuntu
-LIGHTY_USER = 'lighttpd' # CentOS
+# User that runs the lighttpd process
+# OSX: www, Ubuntu: www-data, CentOS: lighttpd, ...
+LIGHTY_USER = 'www'
+
 LIGHTY_HOSTS = {
     'deploy':{
         'www': 0,

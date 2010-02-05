@@ -5,37 +5,5 @@ USER = getattr(settings, 'LIGHTY_USER', 'lighttpd')
 
 HOSTS = getattr(settings, 'LIGHTY_HOSTS', {})
 
-{
-    'deploy':{
-        'www': 0,
-        'host': 'localhost',
-        'aliases': (
-            ('/media', 'media'),
-        ),
-        'rewrites': (
-            ("^(/media.*)$", "$1"),
-        )
-    },
-    'trydjango':{
-        'www': 0,
-        'host': 'trydjango.com',
-        'aliases': (
-            ('/site_media', 'site_media'),
-        ),
-        'rewrites': (
-            ("^(/site\_media.*)$", "$1"),
-        )
-    },
-    'ec':{
-        'www':0,
-        'host':'effervescentcollective.kicks-ass.org',
-        'aliases': (
-            ('/media', 'media'),
-        ),
-        'rewrites': (
-            ("^(/media.*)$", "$1"),
-        ),        
-    }
-}
 
 

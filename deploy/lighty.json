@@ -1,0 +1,1 @@
+[{"pk": 1, "model": "lighty.site", "fields": {"www": 1, "dir_listing": false, "follow_symlink": true, "rewrites": [], "site": 1, "document_root": "/var/code/deploy", "aliases": []}}]
