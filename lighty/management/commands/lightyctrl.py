@@ -1,12 +1,13 @@
 from django.core.management.base import BaseCommand
+from django.contrib.sites.models import Site
 from lighty import settings
 from django.template.loader import render_to_string
 from subprocess import check_call
 import os,sys
 
 def get_files(name):
-    d = os.path.join("/var/code/", arg)
-    return d, os.path.join(proj_dir, '.pid'), os.path.join(proj_dir, '.sock')
+    d = os.path.join("/var/code/", name)
+    return d, os.path.join(d, '.pid'), os.path.join(d, '.sock')
     
 class Command(BaseCommand):
     def handle(self, *args, **options):
@@ -19,9 +20,9 @@ class Command(BaseCommand):
 		    'document_root': proj_dir,
 		    'sockfile': sockfile,
 		    'base': '/var/code',
-		    'no_www': data.get('www',1) == 0,
-		    'force_www': data.get('www',1) == 1,
-		    'follow_symlink': data.get('follow_symlink', True)
+		    'www': data.get('www', 1),
+		    'follow_symlink': data.get('follow_symlink', True),
+		    'host': data.get('host', Site.objects.get_current().domain),
 		})
 		print render_to_string('light/hosts.conf', data)
 		
