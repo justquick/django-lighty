@@ -24,7 +24,7 @@ class Command(BaseCommand):
 		    'follow_symlink': data.get('follow_symlink', True),
 		    'host': data.get('host', Site.objects.get_current().domain),
 		})
-		print render_to_string('light/hosts.conf', data)
+		print render_to_string('lighty/hosts.conf', data)
 		
 	elif len(args):
 	    for name in args:
@@ -43,9 +43,8 @@ class Command(BaseCommand):
 		    check_call(cmds + ['kill', open(pidfile).read().strip()])
 		    check_call(cmds + ['rm', '-f', pidfile])
 		os.chdir(proj_dir)
-
-		    
-		check_call(cmds + [exe, os.path.join(dir, 'manage.py'), 'runfcgi', 
-			'pidfile=%r' % pidfile, 'socket=%r' % sockfile] +
-			settings.FCGI.split())
+		cmds = cmds + [exe, os.path.join(proj_dir, 'manage.py'), 'runfcgi', 
+			'pidfile=%r' % pidfile, 'socket=%r' % sockfile] + \
+			settings.FCGI.split()
+		check_call(cmds)
 		check_call(['sudo', 'chown', settings.USER, sockfile])
