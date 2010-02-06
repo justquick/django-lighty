@@ -132,21 +132,24 @@ class ProxySite(LightySite):
             return self.backends.split(',')
         return self.backends.split()
 
-if not Module.objects.count():
-    map(lambda n: Module.objects.create(name=n),[
-        "mod_evhost",
-        "mod_usertrack",
-        "mod_rrdtool",
-        "mod_webdav",
-        "mod_expire",
-        "mod_flv_streaming",
-        "mod_evasive"])
-    
-if not Site.objects.count():
-    Site.objects.create(
-        name='deploy',
-        domain='localhost',
-        address='127.0.0.1',
-        www=0,
-    )
+try:
+    if not Module.objects.count():
+        map(lambda n: Module.objects.create(name=n),[
+            "mod_evhost",
+            "mod_usertrack",
+            "mod_rrdtool",
+            "mod_webdav",
+            "mod_expire",
+            "mod_flv_streaming",
+            "mod_evasive"])
+        
+    if not Site.objects.count():
+        Site.objects.create(
+            name='deploy',
+            domain='localhost',
+            address='127.0.0.1',
+            www=0,
+        )
+except:
+    pass
     
