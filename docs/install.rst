@@ -22,11 +22,11 @@ Django-Lighty requires Lighttpd>=1.4.22, Django==1.1.1, flup==1.0.2.
 With VirtualEnv (recomended)::
     
     mkvirtualenv deploy
-    easy_install -U flup==1.0.2 django==1.1.1 
+    easy_install pip flup==1.0.2 django==1.1.1 fabric==0.9.0
 
 Without::
     
-    sudo easy_install -U flup==1.0.2 django==1.1.1 
+    sudo easy_install -U flup==1.0.2 django==1.1.1 fabric==0.9.0
 
 Install the ``deploy`` project
 --------------------------------
@@ -50,7 +50,7 @@ This is the main project for managing your sites, restarting fcgi handlers, ligh
 Configure Lighttpd
 -------------------
 
-Edit your Lighttpd configuration file ususally located in  ``/etc/lighttpd/lighttpd.conf``. A sample Debian configuration file is available at ``lighttpd.conf.sample``. 
+Edit your Lighttpd configuration file (ususally located in  ``/etc/lighttpd/lighttpd.conf``). A sample Debian configuration file is available in the ``deploy`` project. 
 Adjust your ``server.modules`` to contain the following::
 
     server.modules = (

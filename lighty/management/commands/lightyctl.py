@@ -1,42 +1,64 @@
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.contrib.sites.models import Site
 from lighty import settings
 from lighty.models import Site, ProxySite
+from lighty.util import *
 from subprocess import call, check_call
-import os,sys
+import os
 
-def get_files(name):
-    d = os.path.join('/var/code/', name)
-    return d, os.path.join(d, '.pid'), os.path.join(d, '.sock')
-    
+        
 class Command(BaseCommand):
     def handle(self, *args, **options):
-	if len(args):
-	    for name in args:
-		if not name in os.listdir('/var/code'): continue
-		proj_dir, pidfile, sockfile = get_files(name)
-		
-		exe = os.path.expanduser('~/.virtualenvs/%s/bin/python' % name)
-		cmds = []
-		if not os.path.isfile(exe):
-		    exe = sys.executable
-		    cmds = ['sudo', '-u', settings.USER]
+        if len(args):
+            if '_'+args[0] in dir(self):
+		getattr(self, '_'+args[0])(*args[1:])
+	    else:
+		raise CommandError('Command "%s" not found' % args[0])
+        else:            
+            exe = vpath('deploy','python')
+            manage = os.path.join(settings.ROOT, 'deploy', 'manage.py')
+            print 'include_shell "%s %s lightyctl configure"\n' % (exe, manage)
+    
+    def _stop(self, *args):
+        for name in args:
+            _,_cmds = cmds(name)
+            _,pidfile,_ = get_files(name)
+            if os.path.isfile(pidfile):
+                call(_cmds + ['kill', open(pidfile).read().strip()])
+                call(_cmds + ['rm', '-f', pidfile])
+            
+    def _start(self, *args):
+        for name in args:
+            proj_dir, pidfile, sockfile = get_files(name)
+            if not os.path.isfile(sockfile): 
+                check_call(['touch', sockfile])            
+                check_call(['sudo', 'chown', settings.USER, sockfile])
+            # $ python ./manage.py runfcgi [options...]
+            os.system(' '.join(cmds(name) + [exe(name),
+                    os.path.join(proj_dir, 'manage.py'), 'runfcgi', 
+                    'pidfile=%r' % pidfile, 'socket=%r' % sockfile] + \
+                    settings.FCGI.split()))
+        
+    def _restart(self, *args):
+        for name in args:
+            self.stop(name)
+            self.start(name)
+            
+    def _deploy(self, *args):
+	fab = vpath('deploy','fab')
+	if not len(args):
+	    args = ('deploy',)
+        for name in args:
+            call((fab, 'deploy:name=%s' % name))
+            
+    def _configure(self, *args):
+        for site in Site.objects.all():
+            print site.render()
+        for site in ProxySite.objects.all():
+            print site.render()
 
-		if os.path.isfile(pidfile):
-		    call(cmds + ['kill', open(pidfile).read().strip()])
-		    call(cmds + ['rm', '-f', pidfile])
-		os.chdir(proj_dir)
-		cmds = cmds + [exe, os.path.join(proj_dir, 'manage.py'), 'runfcgi', 
-			'pidfile=%r' % pidfile, 'socket=%r' % sockfile] + \
-			settings.FCGI.split()
-                os.system(' '.join(cmds))
-		while 1:
-                    if os.path.isfile(sockfile): 
-                        check_call(['sudo', 'chown', settings.USER, sockfile])
-                        break
-	else:	    
-	    for site in Site.objects.all():
-		print site.render()
-	    for site in ProxySite.objects.all():
-		print site.render()
-		
+    def _fab(self, *args):
+	call(('fab',) + args)
+
+
+

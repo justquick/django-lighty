@@ -97,16 +97,4 @@ INSTALLED_APPS = (
 # User that runs the lighttpd process
 # OSX: www, Ubuntu: www-data, CentOS: lighttpd, ...
 LIGHTY_USER = 'www'
-
-LIGHTY_HOSTS = {
-    'deploy':{
-        'www': 0,
-        'host': 'localhost',
-        'aliases': (
-            ('/media', 'media'),
-        ),
-        'rewrites': (
-            ("^(/media.*)$", "$1"),
-        )
-    }
-}
+#LIGHTY_ROOT = PROJECT_ROOT
