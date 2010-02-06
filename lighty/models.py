@@ -45,6 +45,7 @@ class LightySite(models.Model):
     follow_symlink = models.BooleanField(default=True)
     www = models.IntegerField('WWW',default=1,choices=WWW)
     repo = models.CharField('repository url',max_length=255,null=True,blank=True)
+    active = models.BooleanField(default=True)
     
     max_keep_alive_requests = models.IntegerField(default=16)
     max_keep_alive_idle = models.IntegerField(default=5)
@@ -67,9 +68,11 @@ class LightySite(models.Model):
     def __unicode__(self):
         return self.name
         
-    def hostescape(self):
-        return self.domain.replace('.','\\.').replace('-','\\-').replace('_','\\_')
-    hostescape = property(hostescape)
+    def host(self):
+        domain = self.domain.replace('.','\\.').replace('-','\\-').replace('_','\\_')
+        if self.port == 80:
+            return domain
+        return '%s:%s' % (domain, self.port)
     
     def save(self, *a, **kw):
         if not self.document_root:

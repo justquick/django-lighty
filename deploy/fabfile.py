@@ -1,4 +1,5 @@
 from fabric.api import *
+from fabric.contrib.project import rsync_project
 import os,sys
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 from django.db.models import get_model
@@ -8,7 +9,7 @@ from lighty.util import *
 from getpass import getuser
 
 address = lambda s: s.address
-sites = tuple(Site.objects.all()) + tuple(ProxySite.objects.all())
+sites = tuple(Site.objects.filter(active=True)) + tuple(ProxySite.objects.filter(active=True))
 env.hosts = map(address, sites)
 
 def setup(site):
@@ -26,23 +27,28 @@ def itr(name=None):
             setup(site)
             yield site
 
-def deploy(name='deploy'):
+def restart(name='deploy'):
     for site in itr(name):
-        run('whoami')
+        run('workon %s; %s/%s/manage.py lightyctl %s' % (name, settings.ROOT, name, name))
         
-def install(name='deploy'):
-    sudo('mkdir %s' % settings.ROOT)
-    sudo('chown -R %s %s' % (env.user,settings.ROOT))
-    run('cd %s; git clone http://github.com/justquick/django-lighty.git' % settings.ROOT)
-    run('cd %s; mv django-lighty/deploy .' % settings.ROOT)
-    run('cd %s; rm -r django-lighty' % settings.ROOT)
-    sudo('cd %s; cp deploy/lighttpd.conf.sample %s' % (settings.ROOT,settings.CONF))
+def install():
+    try:
+        sudo('mkdir %s' % settings.ROOT)
+        sudo('chown -R %s %s' % (env.user,settings.ROOT))
+    except:
+        pass
+    try:
+        run('cd %s; git clone http://github.com/justquick/django-lighty.git' % settings.ROOT)
+    except:
+        run('cd %s/django-lighty; git pull origin master' % settings.ROOT)
+    rsync_project(remote_dir=settings.ROOT, local_dir=os.path.join(settings.ROOT, 'deploy'))
     run('mkvirtualenv deploy')
-    run('workon %s; easy_install -U pip flup==1.0.2 django==1.1.1 fabric==0.9.0' % name)
-    run('workon %s; pip install git+http://github.com/justquick/django-lighty.git' % name)
-    run('workon %s; %s/%s/manage.py syncdb' % (name, settings.ROOT, name))
-    run('workon %s; %s/%s/manage.py loaddata *.json' % (name, settings.ROOT, name))
-    run('workon %s; %s/%s/manage.py lightyctl >> %s' % (name, settings.ROOT, name, settings.CONF))
+    run('workon deploy; pip install -r %s/deploy/requirements.txt' % settings.ROOT)
+    sudo('cd %s; cp deploy/lighttpd.conf.sample %s' % (settings.ROOT,settings.CONF))
+    run('workon deploy; %s/deploy/manage.py syncdb --noinput' % settings.ROOT)
+    run('workon deploy; %s/deploy/manage.py loaddata *.json' % settings.ROOT)
+    sudo('workon deploy; %s/deploy/manage.py lightyctl >> %s' % (settings.ROOT, settings.CONF))
+    sudo('/etc/init.d/lighttpd restart')
         
 def lighty(name=None,action='status'):
     for site in itr(name):

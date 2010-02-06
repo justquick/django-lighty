@@ -134,5 +134,3 @@ compress.filetype           = ("text/plain", "text/html", "application/x-javascr
 ## mimetype mapping
 include_shell "/usr/share/lighttpd/create-mime.assign.pl"
 
-include_shell "/home/$USER/.virtualenvs/deploy/bin/python /var/code/deploy/manage.py lightyctl"
-

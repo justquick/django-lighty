@@ -14,14 +14,18 @@ class Command(BaseCommand):
 		getattr(self, '_'+args[0])(*args[1:])
 	    else:
 		raise CommandError('Command "%s" not found' % args[0])
-        else:            
-            exe = vpath('deploy','python')
+		
+    def _include(self,*args):
+	if not args:
+	    args = ('deploy',)
+	for name in args:
+            exe = vpath(name,'python')
             manage = os.path.join(settings.ROOT, 'deploy', 'manage.py')
-            print 'include_shell "%s %s lightyctl configure"\n' % (exe, manage)
+            print 'include_shell "%s %s lightyctl configure %s"\n' % (exe, manage, name)
     
     def _stop(self, *args):
         for name in args:
-            _,_cmds = cmds(name)
+            _cmds = cmds(name)
             _,pidfile,_ = get_files(name)
             if os.path.isfile(pidfile):
                 call(_cmds + ['kill', open(pidfile).read().strip()])
@@ -41,8 +45,8 @@ class Command(BaseCommand):
         
     def _restart(self, *args):
         for name in args:
-            self.stop(name)
-            self.start(name)
+            self._stop(name)
+            self._start(name)
             
     def _deploy(self, *args):
 	fab = vpath('deploy','fab')
@@ -56,12 +60,12 @@ class Command(BaseCommand):
 	    for arg in args:
 		for model in (Site, ProxySite):
 		    try:
-			print model.objects.get(name=arg).render()
+			print model.objects.get(active=True,name=arg).render()
 		    except model.DoesNotExist:
 			continue
 	else:
 	    for model in (Site, ProxySite):
-		for site in model.objects.all():
+		for site in model.objects.filter(active=True):
 		    print site.render()
 
     def _fab(self, *args):
